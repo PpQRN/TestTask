@@ -1,0 +1,12 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="MyTestSuite" >
+    <test name="Test1" parallel="tests" thread-count="3">
+        <classes>
+            <class name="CreatePlayerTests"/>
+            <class name="DeletePlayerTests"/>
+            <class name="GetAllPlayersTests"/>
+            <class name="GetPlayerTests"/>
+            <class name="UpdatePlayerTests"/>
+        </classes>
+    </test>
+</suite>

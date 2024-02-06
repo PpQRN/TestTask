@@ -3,7 +3,7 @@ package service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.Player;
 
-public class PlayerService {
+public class PlayerParser {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static Player parseResponseBodyToPlayer(String responseBody) {

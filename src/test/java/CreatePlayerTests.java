@@ -1,160 +1,232 @@
+import endpoints.Endpoints;
+import io.restassured.response.ValidatableResponse;
+import model.Player;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
+import service.PlayerDeleter;
+import service.PlayerParser;
+
+import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 
 public class CreatePlayerTests {
-    public static final String GET_USER_JSON_PATH = "src/test/resources/getUser.json";
+    Player testPlayer;
 
     @Test
     public void createPlayerWithSupervisorRole() {
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=17&gender=male&login=testLogin&role=user&screenName=testName")
+       testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "supervisor", 17, "male", "testLogin", "user", "testName"))
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
+    //BUG
     @Test
     public void createPlayerWithAdminRole() {
-        given()
-                .get("http://3.68.165.45/player/create/admin" +
-                        "?age=17&gender=male&login=login11111&role=user&screenName=name1")
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "admin", 17, "male", "testLogin", "user", "testName"))
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
     public void createPlayerWithUserRole() {
-        given()
-                .get("http://3.68.165.45/player/create/user" +
-                        "?age=17&gender=male&login=login11111&role=user&screenName=name1")
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "user", 17, "male", "testLogin", "user", "testName"))
                 .then()
-                .statusCode(403);
+                .statusCode(403)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
     public void createPlayerWithWrongGender() {
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=17&gender=deer&login=login11111&role=user&screenName=name1")
-                .then()
-                .statusCode(400);
+        ValidatableResponse response = given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "supervisor", 17, "deer", "testLogin", "user", "testName"))
+                .then();
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(response
+                .extract()
+                .response()
+                .getBody().asString());
+        response.statusCode(400);
     }
 
+    //BUG
     @Test
     public void createPlayerWithAgeLessThen16() {
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=10&gender=male&login=login11111&role=user&screenName=name1")
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "supervisor", 15, "male", "testLogin", "user", "testName"))
                 .then()
-                .statusCode(400);
+                .statusCode(400)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
     public void createPlayerWithAgeMoreThen60() {
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=61&gender=male&login=login11111&role=user&screenName=name1")
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "supervisor", 61, "male", "testLogin", "user", "testName"))
                 .then()
-                .statusCode(400);
+                .statusCode(400)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
     public void createPlayerWithAge60() {
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=60&gender=male&login=login11111&role=user&screenName=name1")
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "supervisor", 60, "male", "testLogin", "user", "testName"))
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
+    //BUG
     @Test
     public void createPlayerWithAge16() {
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=16&gender=male&login=login11111&role=user&screenName=name1")
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "supervisor", 16, "male", "testLogin", "user", "testName"))
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
-    public void createPlayerWithValidPass(){
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=17&gender=male&login=loggg&password=qwera2007&role=user&screenName=Poll")
+    public void createPlayerWithValidPass() {
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITH_PASSWORD_ENDPOINT,
+                        "supervisor", 20, "male", "testLogin", "qwera2007", "user", "testName"))
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
-    public void createPlayerWithLessThen7CharPass(){
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=17&gender=male&login=loggg&password=qwe20&role=user&screenName=Poll")
+    public void createPlayerWithLessThen7CharPass() {
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITH_PASSWORD_ENDPOINT,
+                        "supervisor", 15, "male", "testLogin", "qwe20", "user", "testName"))
                 .then()
-                .statusCode(400);
+                .statusCode(400)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
-    public void createPlayerWithMoreThen15CharPass(){
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=17&gender=male&login=loggg&password=qqwweerraa22000077&role=user&screenName=Poll")
+    public void createPlayerWithMoreThen15CharPass() {
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITH_PASSWORD_ENDPOINT,
+                        "supervisor", 15, "male", "testLogin", "qqwweerraa22000077", "user", "testName"))
                 .then()
-                .statusCode(400);
+                .statusCode(400)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
-    public void createPlayerWith7CharPass(){
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=17&gender=male&login=loggg&password=qwera20&role=user&screenName=Poll")
+    public void createPlayerWith7CharPass() {
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITH_PASSWORD_ENDPOINT,
+                        "supervisor", 20, "male", "testLogin", "qwera20", "user", "testName"))
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
-    public void createPlayerWith15CharPass(){
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=17&gender=male&login=loggg&password=qqwweerra200007&role=user&screenName=Poll")
+    public void createPlayerWith15CharPass() {
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITH_PASSWORD_ENDPOINT,
+                        "supervisor", 20, "male", "testLogin", "qqwweerra200007", "user", "testName"))
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
-    public void createPlayerWithLetterPass(){
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=17&gender=male&login=loggg&password=qweraaaa&role=user&screenName=Poll")
+    public void createPlayerWithLetterPass() {
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITH_PASSWORD_ENDPOINT,
+                        "supervisor", 15, "male", "testLogin", "qweraaaa", "user", "testName"))
                 .then()
-                .statusCode(400);
+                .statusCode(400)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
-    public void createPlayerWithNumberPass(){
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=17&gender=male&login=loggg&password=123452007&role=user&screenName=Poll")
+    public void createPlayerWithNumberPass() {
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITH_PASSWORD_ENDPOINT,
+                        "supervisor", 15, "male", "testLogin", "123452007", "user", "testName"))
                 .then()
-                .statusCode(400);
+                .statusCode(400)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
-    public void createPlayerWithSpecialSymbolsPass(){
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=17&gender=male&login=loggg&password=qwera2$$$007&role=user&screenName=Poll")
+    public void createPlayerWithSpecialSymbolsPass() {
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITH_PASSWORD_ENDPOINT,
+                        "supervisor", 15, "male", "testLogin", "qwera2$$$007", "user", "testName"))
                 .then()
-                .statusCode(400);
+                .statusCode(400)
+                .extract()
+                .response()
+                .getBody().asString());
     }
 
     @Test
-    public void createPlayerWithOnlySpecialSymbolsPass(){
-        given()
-                .get("http://3.68.165.45/player/create/supervisor" +
-                        "?age=17&gender=male&login=loggg&password=$$$$$$$$$&role=user&screenName=Poll")
+    public void createPlayerWithOnlySpecialSymbolsPass() {
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITH_PASSWORD_ENDPOINT,
+                        "supervisor", 15, "male", "testLogin", "$$$$$$$$$", "user", "testName"))
                 .then()
-                .statusCode(400);
+                .statusCode(400)
+                .extract()
+                .response()
+                .getBody().asString());
+    }
+
+    @AfterMethod
+    private void deleteUserAfterTest() throws IOException {
+        try {
+            PlayerDeleter.deleteUserAfterTest(testPlayer);
+        } catch (NullPointerException exception){
+            System.out.println("User was not created");
+        }
     }
 }

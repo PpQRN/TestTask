@@ -1,43 +1,36 @@
-import io.restassured.response.ResponseBody;
+import endpoints.Endpoints;
 import model.Player;
-import org.apache.commons.io.FileUtils;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import service.PlayerService;
+import service.FileReader;
+import service.PlayerCreator;
+import service.PlayerDeleter;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import static io.restassured.RestAssured.given;
 
 public class UpdatePlayerTests {
 
-    public static final String GET_USER_JSON_PATH = "src/test/resources/getUser.json";
-    public static final String  UPDATE_PLAYER_JSON_PATH = "src/test/resources/playerPatchParam.json";
+    public static final String UPDATE_PLAYER_JSON_PATH = "src/test/resources/patchPlayer.json";
     private Player testPlayer;
+    private Player testAdmin;
+    private Player testUser;
 
     @BeforeMethod
     private void createUserForTests() {
-        ResponseBody body =
-                given()
-                        .get("http://3.68.165.45/player/create/supervisor" +
-                                "?age=20&gender=male&login=TestLogin&role=user&screenName=TestScrName")
-                        .then()
-                        .statusCode(200)
-                        .extract()
-                        .response()
-                        .getBody();
-        testPlayer = PlayerService.parseResponseBodyToPlayer(body.asString());
+        testPlayer = PlayerCreator.createUserForTests("testPlayer");
+        testAdmin = PlayerCreator.createAdminForTests();
+        testUser = PlayerCreator.createUserForTests("testUser");
     }
 
     @Test
     public void updatePlayerWithSupervisorRole() throws IOException {
         given()
-                .body(String.format(readJsonToString(UPDATE_PLAYER_JSON_PATH), 18))
+                .body(String.format(FileReader.readJsonToString(UPDATE_PLAYER_JSON_PATH), 30))
                 .contentType("application/json")
-                .patch(String.format("http://3.68.165.45/player/update/supervisor/%s", testPlayer.getId()))
+                .patch(String.format(Endpoints.UPDATE_PLAYER_ENDPOINT, "supervisor", testPlayer.getId()))
                 .then()
                 .statusCode(200);
     }
@@ -45,9 +38,9 @@ public class UpdatePlayerTests {
     @Test
     public void updatePlayerWithAdminRole() throws IOException {
         given()
-                .body(String.format(readJsonToString(UPDATE_PLAYER_JSON_PATH), 18))
+                .body(String.format(FileReader.readJsonToString(UPDATE_PLAYER_JSON_PATH), 30))
                 .contentType("application/json")
-                .patch(String.format("http://3.68.165.45/player/update/admin/%s", testPlayer.getId()))
+                .patch(String.format(Endpoints.UPDATE_PLAYER_ENDPOINT, testAdmin.getLogin(), testPlayer.getId()))
                 .then()
                 .statusCode(200);
     }
@@ -55,25 +48,18 @@ public class UpdatePlayerTests {
     @Test
     public void updatePlayerWithUserRole() throws IOException {
         given()
-                .body(String.format(readJsonToString(UPDATE_PLAYER_JSON_PATH), 18))
+                .body(String.format(FileReader.readJsonToString(UPDATE_PLAYER_JSON_PATH), 30))
                 .contentType("application/json")
-                .patch(String.format("http://3.68.165.45/player/update/user/%s", testPlayer.getId()))
+                .patch(String.format(Endpoints.UPDATE_PLAYER_ENDPOINT, testUser.getLogin(), testPlayer.getId()))
                 .then()
-                .statusCode(200);
-    }
-
-    private static String readJsonToString(String path) throws IOException {
-        return FileUtils.readFileToString(new File(path), StandardCharsets.UTF_8);
+                .statusCode(403);
     }
 
     @AfterMethod
     private void deleteUserAfterTest() throws IOException {
-        given()
-                .body(String.format(readJsonToString(GET_USER_JSON_PATH), testPlayer.getId()))
-                .contentType("application/json")
-                .delete("http://3.68.165.45/player/delete/supervisor")
-                .then()
-                .statusCode(204);
+        PlayerDeleter.deleteUserAfterTest(testPlayer);
+        PlayerDeleter.deleteUserAfterTest(testAdmin);
+        PlayerDeleter.deleteUserAfterTest(testUser);
     }
 }
 
