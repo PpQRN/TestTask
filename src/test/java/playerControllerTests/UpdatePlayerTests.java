@@ -1,8 +1,10 @@
+package playerControllerTests;
+
 import endpoints.Endpoints;
 import model.Player;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.testng.annotations.*;
 import service.FileReader;
 import service.PlayerCreator;
 import service.PlayerDeleter;
@@ -13,16 +15,23 @@ import static io.restassured.RestAssured.given;
 
 public class UpdatePlayerTests {
 
+    private static final Logger logger = LogManager.getLogger(UpdatePlayerTests.class);
     public static final String UPDATE_PLAYER_JSON_PATH = "src/test/resources/patchPlayer.json";
     private Player testPlayer;
     private Player testAdmin;
     private Player testUser;
 
+    @BeforeTest
+    private void createEditorsForTests() {
+        testAdmin = PlayerCreator.createAdminForTests();
+        testUser = PlayerCreator.createUserForTests("TestUser");
+        logger.info("Test editors were successfully created");
+    }
+
     @BeforeMethod
     private void createUserForTests() {
         testPlayer = PlayerCreator.createUserForTests("testPlayer");
-        testAdmin = PlayerCreator.createAdminForTests();
-        testUser = PlayerCreator.createUserForTests("testUser");
+        logger.info("Test player was successfully created");
     }
 
     @Test
@@ -58,8 +67,14 @@ public class UpdatePlayerTests {
     @AfterMethod
     private void deleteUserAfterTest() throws IOException {
         PlayerDeleter.deleteUserAfterTest(testPlayer);
+        logger.info("Test player was successfully deleted");
+    }
+
+    @AfterTest
+    private void deleteEditorsAfterTest() throws IOException {
         PlayerDeleter.deleteUserAfterTest(testAdmin);
         PlayerDeleter.deleteUserAfterTest(testUser);
+        logger.info("Test editors were successfully deleted");
     }
 }
 

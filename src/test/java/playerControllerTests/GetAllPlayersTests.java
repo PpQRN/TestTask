@@ -1,3 +1,5 @@
+package playerControllerTests;
+
 import endpoints.Endpoints;
 import org.testng.annotations.Test;
 
@@ -11,5 +13,13 @@ public class GetAllPlayersTests {
                 .get(Endpoints.GET_ALL_PLAYERS_ENDPOINT)
                 .then()
                 .statusCode(200);
+    }
+
+    @Test
+    public void getAllPlayersNegativeTest() {
+        given()
+                .post(Endpoints.GET_ALL_PLAYERS_ENDPOINT)
+                .then()
+                .statusCode(405);
     }
 }

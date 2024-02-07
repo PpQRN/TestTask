@@ -1,6 +1,10 @@
+package playerControllerTests;
+
 import endpoints.Endpoints;
 import io.restassured.response.ValidatableResponse;
 import model.Player;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 import service.PlayerDeleter;
@@ -11,6 +15,7 @@ import java.io.IOException;
 import static io.restassured.RestAssured.given;
 
 public class CreatePlayerTests {
+    private static final Logger logger = LogManager.getLogger(CreatePlayerTests.class);
     Player testPlayer;
 
     @Test
@@ -225,8 +230,9 @@ public class CreatePlayerTests {
     private void deleteUserAfterTest() throws IOException {
         try {
             PlayerDeleter.deleteUserAfterTest(testPlayer);
-        } catch (NullPointerException exception){
-            System.out.println("User was not created");
+            logger.info("Player was successfully deleted after test");
+        } catch (NullPointerException exception) {
+            logger.warn("Player was not created or deleted");
         }
     }
 }

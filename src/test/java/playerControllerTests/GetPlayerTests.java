@@ -1,11 +1,8 @@
+package playerControllerTests;
+
 import endpoints.Endpoints;
-import model.Player;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import service.FileReader;
-import service.PlayerCreator;
-import service.PlayerDeleter;
 
 import java.io.IOException;
 
