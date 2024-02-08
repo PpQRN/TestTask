@@ -20,7 +20,7 @@ public class CreatePlayerTests {
 
     @Test
     public void createPlayerWithSupervisorRole() {
-       testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
                 .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
                         "supervisor", 17, "male", "testLogin", "user", "testName"))
                 .then()
@@ -53,6 +53,42 @@ public class CreatePlayerTests {
                 .extract()
                 .response()
                 .getBody().asString());
+    }
+
+    //BUG
+    @Test
+    public void createPlayerWithExistingLogin() {
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "supervisor", 17, "male", "testLogin", "user", "testName"))
+                .then()
+                .statusCode(200)
+                .extract()
+                .response()
+                .getBody().asString());
+        given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "supervisor", 20, "male", testPlayer.getLogin(), "user", "newScreenName"))
+                .then()
+                .statusCode(400);
+    }
+
+    //BUG
+    @Test
+    public void createPlayerWithExistingScreenName() {
+        testPlayer = PlayerParser.parseResponseBodyToPlayer(given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "supervisor", 17, "male", "testLogin", "user", "testName"))
+                .then()
+                .statusCode(200)
+                .extract()
+                .response()
+                .getBody().asString());
+        given()
+                .get(String.format(Endpoints.CREATE_PLAYER_WITHOUT_PASSWORD_ENDPOINT,
+                        "supervisor", 20, "male", "newLogin", "user", "testName"))
+                .then()
+                .statusCode(400);
     }
 
     @Test
